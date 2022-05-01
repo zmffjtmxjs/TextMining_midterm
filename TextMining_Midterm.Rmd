@@ -26,6 +26,35 @@ library(ggplot2)
 ###### 해당 분석은 실습을 목적으로 진행된 것이며 어떠한 정치적 의미를 가지지 않습니다.
 
 #### 문제2. 가장 자주 사용된 단어 추출 및 빈도 그래프 만들기
+##### 0) 데이터 전처리
+```{r}
+yun_speech =
+  #파일 불러오기
+  readLines("yun_speech.txt", encoding = "UTF-8") %>%
+  #티블로 변환
+  as_tibble() %>%
+  #병합 시 구분을 위한 변수 추가
+  mutate(president = "yun")
+
+lee_speech =
+  #파일 불러오기
+  readLines("lee_speech.txt", encoding = "UTF-8") %>%
+  #티블로 변환
+  as_tibble() %>%
+  #병합 시 구분을 위한 변수 추가
+  mutate(president = "lee")
+
+#두 개의 연설문을 하나로 병합
+speeches = bind_rows(yun_speech, lee_speech) %>%
+  select(president, value) %>% 
+  #한글이 아닌 문자 전부 제거 ...
+  mutate(value = str_replace_all(value, pattern = "[^가-힣]",  replacement = " "),
+         #... 그리고 띄어쓰기가 2개이상 연속된 문자열을 하나로 압축
+         value = str_squish(value))
+
+#전처리 결과 확인
+speeches
+```
 
 #### 문제3. 오즈비 또는 TF-IDF 활용하여 분석하기
 
