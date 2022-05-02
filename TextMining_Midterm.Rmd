@@ -94,10 +94,21 @@ ggplot(top10_president_keywrod,                 #그래프에 사용할 데이�
   #제목, X&Y축 제목
   labs(title = "연설문 단어 빈도", x = "단어", y = "횟수") +  
   #글자 크기 변경
-  theme(title = element_text(size =10))                       
+  theme(title = element_text(size =10))
 ```
 
 #### 문제3. 오즈비 또는 TF-IDF 활용하여 분석하기
+```{r}
+#TF-IDF를 활용하여 연설문 분석
+speeches_tf_idf = speeches_freq %>%
+  bind_tf_idf(term = word, document = president, n = n) %>%
+  arrange(-tf_idf)
+
+#tf기준 내림차순으로 정렬
+(arg_tf = speeches_tf_idf %>% arrange(-tf))
+#tf_idf기준 내림차순으로 정렬
+(arg_tf_idf = speeches_tf_idf %>% arrange(-tf_idf))
+```
 
 #### 문제4. 감정사전을 적용하여, 텍스트의 감정 경향을 분석하기
 
