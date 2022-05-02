@@ -104,15 +104,39 @@ ggplot(top10_president_keywrod,                 #그래프에 사용할 데이�
 #TF-IDF를 활용하여 연설문 분석
 speeches_tf_idf = speeches_freq %>%
   bind_tf_idf(term = word, document = president, n = n) %>%
-  arrange(-tf_idf)
+  group_by(president) %>%
+  slice_max(tf_idf, n = 10, with_ties = F)
+speeches_tf_idf$president = factor(speeches_tf_idf$president, levels = c("lee", "yun"))
 
-#tf기준 내림차순으로 정렬
-(arg_tf = speeches_tf_idf %>% arrange(-tf))
-#tf_idf기준 내림차순으로 정렬
-(arg_tf_idf = speeches_tf_idf %>% arrange(-tf_idf))
+#분석을 위해 TF-IDF 수치로 그래프 그리기
+ggplot(speeches_tf_idf,                                 #그래프 사용 데이터 지정
+       # x축은 tf_idf수치를 기준으로 word를 재정렬하고 president로 묶는다.
+       aes(x = reorder_within(word, tf_idf, president),
+           # y축은 tf_idf 수치로 데이터 막대를 그린다.
+           y = tf_idf,
+           # 대통령(president) 기준으로 색지정
+           fill = president)) +
+  #막대 그래프를 그리며 범례(legend)를 표시 하지 않음
+  geom_col(show.legend = F) +
+  #세로 막대 그래프로 변경
+  coord_flip() +
+  # president별로 막대그래프를 따로그린다.
+  facet_wrap(~president,
+             # x축과 y축을 각 막대그래프에 독립적으로 조절한다.
+             scales = "free",
+             # 2열로 배치한다.
+             ncol = 2) +
+  #x축에 ___yun과 같이 불필요한 어미를 제거한다.
+  scale_x_reordered() + 
+  #x축과 y축의 라벨을 제거한다.
+  labs(x = NULL, y = NULL)
 ```
 #### 결과 해석
+TF-IDF는 흔하지 않고 한 텍스트에서 자주 사용되면 높은 값을 나타내는데 위의 결과에서 단어가 "가지", "이재" 같은 의미 없는 단어를 제외했을 때
 
+이재명의 연설문에서는 "성장"을 강조하며 그 다음으로 "부동산, 민생, 회복"순서로 특징성을 보이며 그래프에 나온 단어들을 조합해보면 "성장을 위해 부동산과 민생 회복 관련으로 대전환(또는 개혁)을 시도할 것"으로 보인다.
+
+윤석열의 연설문에서는 "정권교체"을 강조하며 그 다음으로 "생각, 내년, 가구"순으로 특징성을 보이며 그래프의 결과에서 "정권교체"의 TF-IDF 수치가 두 연설문의 단어 중 제일 높아 "정권교체를 하겠다"는 의지가 큼을 볼 수 있다.
 
 
 ### 문제4. 감정사전을 적용하여, 텍스트의 감정 경향을 분석하기
