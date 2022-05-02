@@ -156,11 +156,39 @@ TF-IDF는 흔하지 않고 한 텍스트에서 자주 사용되면 높은 값을
 
 
 ### 문제4. 감정사전을 적용하여, 텍스트의 감정 경향을 분석하기
-#### 크롤링한 데이터에서 일부 가져오기 
+#### 코드 작성 및 분석 과정
+##### 0) 크롤링한 데이터에서 리뷰내용만 가져오고 전처리하기 
 ```{r}
-replys = read_excel("2022-05-03-01-45-22-로스트 시티.xls", range = cell_cols(3), col_names = "reply")
+dic = read_csv("knu_sentiment_lexicon.csv")
+replys = read_excel("2022-05-03-01-45-22-로스트 시티.xls", range = cell_cols(3), col_names = "reply")[-1,] %>%
+  unnest_tokens(input = reply, output = word, token = "words", drop = F)
 ```
 
+##### 1) 감정사전 적용
+```{r}
+sen_score = replys %>%
+  left_join(dic, by = "word") %>%
+  mutate(polarity = ifelse(is.na(polarity), 0, polarity))
+
+sen_score_sum = sen_score %>%
+  group_by(reply) %>%
+  summarise(score = sum(polarity)) %>%
+  mutate(id = row_number())
+
+#점수가 부여된(0점이 아닌) 단어[표4-1]
+sen_score %>% filter(polarity != 0)
+#산점도를 이용하여 모든 댓글의 감정점수 분포를 그래프로 확인[그래프4-1]
+plot(x = sen_score_sum$id, y = sen_score_sum$score, xlab = "id", ylab = "점수", ylim = c(-5, 5)) +
+  grid()
+```
+
+#### 분석결과
+표4-1을 확인해보면 점수가 매겨진(0점이 아닌) 단어는 23개로 확인되었으며 확인된 단어 393개에 비해 극히 적은 갯수를 보인다.
+
+리뷰의 감정점수를 산점도로 표현한 그래프 4-1의 결과를 미루어 보았을 때 부정적으로 기울어져 있음을 확인할 수 있었다.
+
+
 ### 문제5. 감정사전 수정하여 적용하고, 수정전과 비교분석하기
+
 
 ### 추가점수문제. github로 버전관리 진행하고, 그 과정을 증비하기
