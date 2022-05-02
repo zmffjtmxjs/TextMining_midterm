@@ -88,7 +88,9 @@ ggplot(top10_president_keywrod,                 #그래프에 사용할 데이�
   #그래프에 생성되는 불필요한(__moon과 같은) 항목이름 제거
   scale_x_reordered() +                                       
   #막대바 끝 숫자 위치 오프셋
-  geom_text(aes(label = n), hjust = -0.3) +                   
+  geom_text(aes(label = n), hjust = -0.3) + 
+  #y축 최대값 설정
+  ylim(0, 40) +
   #제목, X&Y축 제목
   labs(title = "연설문 단어 빈도", x = "단어", y = "횟수") +  
   #글자 크기 변경
